@@ -41,15 +41,19 @@
       .box {
         width: 60px;
         height: 60px;
-        background-color: #3498db;
+        /* 這裡把原本的 background-image 拿掉，改由 JS 控制 */
+        background-color: #eee; /* 預設底色，圖片載入前顯示 */
+        background-size: cover;
+        background-position: center;
         border-radius: 8px;
         cursor: pointer;
         font-size: 30px;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: transform 0.1s, background-color 0.3s;
+        transition: transform 0.1s;
         user-select: none;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
       }
 
       .box:active {
@@ -58,6 +62,9 @@
       .box.revealed {
         cursor: default;
         pointer-events: none;
+        background-image: none !important; /* 重要！強制移除背景圖 */
+        background-color: #fff; /* 點開後的底色 */
+        box-shadow: none;
       }
       .box.good {
         background-color: #2ecc71;
@@ -166,24 +173,47 @@
       const finalScoreEl = document.getElementById("final-score");
 
       // 初始化遊戲
+      const foodImages = [
+          "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300", // 沙拉/健康餐
+          "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300", // 漢堡
+          "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=300", // 壽司
+          "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300", // 比薩
+          "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=300", // 烤肉/牛排
+          "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=300", // 拉麵
+          "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=300", // 炸雞
+          "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=300", // 蛋糕
+          "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=300", // 早餐盤
+          "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=300", // 沙拉/輕食
+          "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300", // 鬆餅
+          "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=300"  // 點心
+      ];
+      
       function initGame() {
-        gridEl.innerHTML = "";
-        score = 0;
-        isGameOver = false;
-        scoreEl.innerText = `分數: ${score}`;
-        modalEl.style.display = "none";
-        document.getElementById("loading-msg").style.display = "none";
-
-        // 隨機決定炸彈位置 (0 ~ 24)
-        bombIndex = Math.floor(Math.random() * gridSize);
-
-        for (let i = 0; i < gridSize; i++) {
-          let box = document.createElement("div");
-          box.className = "box";
-          box.dataset.index = i;
-          box.addEventListener("click", () => handleClick(box, i));
-          gridEl.appendChild(box);
-        }
+          gridEl.innerHTML = '';
+          score = 0;
+          isGameOver = false;
+          scoreEl.innerText = `分數: ${score}`;
+          modalEl.style.display = 'none';
+          document.getElementById('loading-msg').style.display = 'none';
+      
+          // 隨機決定炸彈位置
+          bombIndex = Math.floor(Math.random() * gridSize);
+      
+          for (let i = 0; i < gridSize; i++) {
+              let box = document.createElement('div');
+              box.className = 'box';
+              box.dataset.index = i;
+              
+              // --- 新增這段：隨機挑選一張圖片 ---
+              // 隨機選一個索引值
+              const randomImgIndex = Math.floor(Math.random() * foodImages.length);
+              // 設定背景圖片
+              box.style.backgroundImage = `url('${foodImages[randomImgIndex]}')`;
+              // -------------------------------
+      
+              box.addEventListener('click', () => handleClick(box, i));
+              gridEl.appendChild(box);
+          }
       }
 
       // 點擊處理
@@ -253,3 +283,4 @@
     </script>
   </body>
 </html>
+

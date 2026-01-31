@@ -209,20 +209,24 @@
           modalEl.style.display = 'none';
           document.getElementById('loading-msg').style.display = 'none';
       
-          // 隨機決定炸彈位置
+          // 隨機決定炸彈位置 (0 ~ 24)
           bombIndex = Math.floor(Math.random() * gridSize);
+          
+          // --- 關鍵步驟：洗牌 (Shuffle) ---
+          // 複製一份圖片陣列，以免影響原始資料
+          let shuffledImages = [...foodImages]; 
+          // 使用 sort + random 進行簡單洗牌，確保每次順序不同
+          shuffledImages.sort(() => Math.random() - 0.5);
       
           for (let i = 0; i < gridSize; i++) {
               let box = document.createElement('div');
               box.className = 'box';
               box.dataset.index = i;
               
-              // --- 新增這段：隨機挑選一張圖片 ---
-              // 隨機選一個索引值
-              const randomImgIndex = Math.floor(Math.random() * foodImages.length);
-              // 設定背景圖片
-              box.style.backgroundImage = `url('${foodImages[randomImgIndex]}')`;
-              // -------------------------------
+              // 依序取出洗牌後的圖片
+              // 為了避免圖片少於格子數報錯，使用 % 取餘數 (雖然這裡剛好都是25)
+              let imgUrl = shuffledImages[i % shuffledImages.length];
+              box.style.backgroundImage = `url('${imgUrl}')`;
       
               box.addEventListener('click', () => handleClick(box, i));
               gridEl.appendChild(box);
@@ -296,5 +300,6 @@
     </script>
   </body>
 </html>
+
 
 

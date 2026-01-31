@@ -138,14 +138,14 @@
     </style>
   </head>
   <body>
-    <h1>美食獵人 💎</h1>
+    <h1>美食獵人 🍗</h1>
     <div id="score-board">分數: 0</div>
 
     <div id="game-grid"></div>
 
     <div id="modal">
       <div class="modal-content">
-        <h2 id="end-title">💥 爆炸了！</h2>
+        <h2 id="end-title">🤮 食物中毒了！</h2>
         <p>最終分數: <span id="final-score">0</span></p>
         <input
           type="text"
@@ -247,7 +247,7 @@
         } else {
           // 踩到寶藏
           box.classList.add("good");
-          box.innerText = "💎";
+          box.innerText = "🍗好吃！";
           score += 10;
           scoreEl.innerText = `分數: ${score}`;
         }
@@ -300,6 +300,7 @@
     </script>
   </body>
 </html>
+
 
 
 

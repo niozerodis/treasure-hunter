@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>寶藏獵人 - 踩地雷大挑戰</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        text-align: center;
+        background-color: #f0f2f5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+      #score-board {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 20px;
+      }
+
+      /* 遊戲區域 */
+      #game-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 60px);
+        gap: 10px;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .box {
+        width: 60px;
+        height: 60px;
+        background-color: #3498db;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.1s, background-color 0.3s;
+        user-select: none;
+      }
+
+      .box:active {
+        transform: scale(0.95);
+      }
+      .box.revealed {
+        cursor: default;
+        pointer-events: none;
+      }
+      .box.good {
+        background-color: #2ecc71;
+        color: white;
+      }
+      .box.bad {
+        background-color: #e74c3c;
+        animation: shake 0.5s;
+      }
+
+      /* 結算彈窗 */
+      #modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        width: 300px;
+      }
+      input {
+        padding: 10px;
+        width: 80%;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+      button {
+        padding: 10px 20px;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #555;
+      }
+      .loading {
+        color: #888;
+        font-size: 0.9em;
+        display: none;
+      }
+
+      @keyframes shake {
+        0% {
+          transform: translate(1px, 1px) rotate(0deg);
+        }
+        10% {
+          transform: translate(-1px, -2px) rotate(-1deg);
+        }
+        20% {
+          transform: translate(-3px, 0px) rotate(1deg);
+        }
+        30% {
+          transform: translate(3px, 2px) rotate(0deg);
+        }
+        100% {
+          transform: translate(0, 0) rotate(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>寶藏獵人 💎</h1>
+    <div id="score-board">分數: 0</div>
+
+    <div id="game-grid"></div>
+
+    <div id="modal">
+      <div class="modal-content">
+        <h2 id="end-title">💥 爆炸了！</h2>
+        <p>最終分數: <span id="final-score">0</span></p>
+        <input
+          type="text"
+          id="player-name"
+          placeholder="輸入你的名字"
+          maxlength="10"
+        />
+        <br />
+        <button onclick="submitScore()">上傳分數並重來</button>
+        <p class="loading" id="loading-msg">上傳中...</p>
+      </div>
+    </div>
+
+    <script>
+      // 設定區：請填入你的 Google Apps Script 網址
+      const API_URL = "https://script.google.com/macros/s/AKfycbx8EG2kN-I28uHcuKZl-UGP9oDEaDf_zejQEW4_m8WxsEtXwJbpWq6SSRHiORuVXVaffg/exec";
+
+      const gridSize = 25; // 5x5
+      let score = 0;
+      let isGameOver = false;
+      let bombIndex = -1;
+      const gridEl = document.getElementById("game-grid");
+      const scoreEl = document.getElementById("score-board");
+      const modalEl = document.getElementById("modal");
+      const finalScoreEl = document.getElementById("final-score");
+
+      // 初始化遊戲
+      function initGame() {
+        gridEl.innerHTML = "";
+        score = 0;
+        isGameOver = false;
+        scoreEl.innerText = `分數: ${score}`;
+        modalEl.style.display = "none";
+        document.getElementById("loading-msg").style.display = "none";
+
+        // 隨機決定炸彈位置 (0 ~ 24)
+        bombIndex = Math.floor(Math.random() * gridSize);
+
+        for (let i = 0; i < gridSize; i++) {
+          let box = document.createElement("div");
+          box.className = "box";
+          box.dataset.index = i;
+          box.addEventListener("click", () => handleClick(box, i));
+          gridEl.appendChild(box);
+        }
+      }
+
+      // 點擊處理
+      function handleClick(box, index) {
+        if (isGameOver || box.classList.contains("revealed")) return;
+
+        box.classList.add("revealed");
+
+        if (index === bombIndex) {
+          // 踩到炸彈
+          box.classList.add("bad");
+          box.innerText = "💣";
+          gameOver();
+        } else {
+          // 踩到寶藏
+          box.classList.add("good");
+          box.innerText = "💎";
+          score += 10;
+          scoreEl.innerText = `分數: ${score}`;
+        }
+      }
+
+      function gameOver() {
+        isGameOver = true;
+        // 顯示所有答案
+        const boxes = document.querySelectorAll(".box");
+        boxes[bombIndex].classList.add("bad");
+        boxes[bombIndex].innerText = "💣";
+
+        setTimeout(() => {
+          finalScoreEl.innerText = score;
+          modalEl.style.display = "flex";
+        }, 500);
+      }
+
+      // 上傳分數
+      function submitScore() {
+        const name = document.getElementById("player-name").value || "無名氏";
+        const loadingMsg = document.getElementById("loading-msg");
+
+        loadingMsg.style.display = "block";
+
+        // 使用 fetch 發送 POST 請求
+        // mode: 'no-cors' 是為了避免跨域錯誤，雖然這樣前端無法讀取回傳值，
+        // 但資料確實會送到 Google Sheet
+        fetch(API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: name, score: score }),
+        })
+          .then(() => {
+            alert("分數已上傳！");
+            initGame();
+          })
+          .catch((err) => {
+            console.error(err);
+            alert("上傳失敗，請檢查網路");
+            initGame();
+          });
+      }
+
+      // 啟動
+      initGame();
+    </script>
+  </body>
+</html>

@@ -47,7 +47,7 @@
         background-position: center;
         border-radius: 8px;
         cursor: pointer;
-        font-size: 30px;
+        font-size: 15px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -67,12 +67,16 @@
         box-shadow: none;
       }
       .box.good {
-        background-color: #13e8e0;
+        background-color: #26a6d5;
         color: white;
+      }
+      .box.good span {
+        font-size: 30px;
       }
       .box.bad {
         background-color: #e74c3c;
         animation: shake 0.5s;
+        font-size: 30px;
       }
 
       /* 結算彈窗 */
@@ -247,7 +251,7 @@
         } else {
           // 踩到寶藏
           box.classList.add("good");
-          box.innerText = "🍗好吃！";
+          box.innerHTML = `<span>🍗</span>好吃`
           score += 10;
           scoreEl.innerText = `分數: ${score}`;
         }
@@ -300,6 +304,7 @@
     </script>
   </body>
 </html>
+
 
 
 
